@@ -40,10 +40,12 @@ public class PlayerController : MonoBehaviour
     void HandleMovement()
     {
         float moveInput = Input.GetAxis("Horizontal");
+        Debug.Log("Move Input: " + moveInput);
 
         if (!isAttacking)
         {
             rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+            Debug.Log("Rigidbody Velocity: " + rb.velocity);
 
             if (moveInput > 0 && !isFacingRight)
             {
@@ -54,9 +56,9 @@ public class PlayerController : MonoBehaviour
                 Flip();
             }
         }
-        else
+        else if (rb.velocity.y == 0) // Only change direction if player is not jumping
         {
-            rb.velocity = new Vector2(0f, rb.velocity.y);
+            rb.velocity = new Vector2(0f, rb.velocity.y); // Stop horizontal movement during attack
         }
     }
 
