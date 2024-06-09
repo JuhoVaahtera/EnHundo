@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     private enum State { Idle, Running, Jumping, Falling, Attacking, Dying, Hit }
     private State currentState = State.Idle;
 
+    private bool isAttacking = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -38,15 +40,23 @@ public class PlayerController : MonoBehaviour
     void HandleMovement()
     {
         float moveInput = Input.GetAxis("Horizontal");
-        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
 
-        if (moveInput > 0 && !isFacingRight)
+        if (!isAttacking)
         {
-            Flip();
+            rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+
+            if (moveInput > 0 && !isFacingRight)
+            {
+                Flip();
+            }
+            else if (moveInput < 0 && isFacingRight)
+            {
+                Flip();
+            }
         }
-        else if (moveInput < 0 && isFacingRight)
+        else
         {
-            Flip();
+            rb.velocity = new Vector2(0f, rb.velocity.y);
         }
     }
 
@@ -62,16 +72,24 @@ public class PlayerController : MonoBehaviour
 
     void HandleAttack()
     {
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetButtonDown("Fire1") && !isAttacking)
         {
-            currentState = State.Attacking;
-            animator.SetTrigger("Attack");
+            StartCoroutine(AttackCoroutine());
         }
+    }
+
+    IEnumerator AttackCoroutine()
+    {
+        isAttacking = true;
+        currentState = State.Attacking;
+        animator.SetTrigger("Attack");
+        yield return new WaitForSeconds(0.2f); // Adjust this delay according to your attack animation duration
+        isAttacking = false;
     }
 
     void UpdateAnimationState()
     {
-        if (currentState == State.Attacking)
+        if (isAttacking)
             return;
 
         if (rb.velocity.y > 0.1f)
@@ -124,6 +142,6 @@ public class PlayerController : MonoBehaviour
     private void ResetState()
     {
         currentState = State.Idle;
+        animator.SetInteger("State", (int)currentState);
     }
 }
-
