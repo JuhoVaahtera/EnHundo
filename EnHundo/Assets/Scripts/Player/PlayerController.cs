@@ -13,39 +13,47 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool isFacingRight = true;
 
+    private SwordCollider swordCollider; // Reference to the SwordCollider script
+
     // Animation States
     private enum State { Idle, Running, Jumping, Falling, Attacking, Dying, Hit }
     private State currentState = State.Idle;
 
     private bool isAttacking = false;
+    private float moveInput;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        swordCollider = GetComponentInChildren<SwordCollider>(); // Get the SwordCollider component from the child
     }
 
     void Update()
     {
         if (currentState != State.Dying && currentState != State.Hit)
         {
-            HandleMovement();
+            moveInput = Input.GetAxis("Horizontal");
+            
+
             HandleJump();
             HandleAttack();
             UpdateAnimationState();
         }
     }
 
+    void FixedUpdate()
+    {
+        HandleMovement();
+    }
+
     void HandleMovement()
     {
-        float moveInput = Input.GetAxis("Horizontal");
-        Debug.Log("Move Input: " + moveInput);
-
         if (!isAttacking)
         {
             rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
-            Debug.Log("Rigidbody Velocity: " + rb.velocity);
+            
 
             if (moveInput > 0 && !isFacingRight)
             {
@@ -132,6 +140,10 @@ public class PlayerController : MonoBehaviour
         {
             currentState = State.Hit;
             animator.SetTrigger("Hit");
+            // Stop player movement temporarily
+            rb.velocity = Vector2.zero;
+            isAttacking = false; // Stop attacking if the player was attacking
+
         }
     }
 
@@ -145,5 +157,22 @@ public class PlayerController : MonoBehaviour
     {
         currentState = State.Idle;
         animator.SetInteger("State", (int)currentState);
+    }
+
+    // Methods to enable and disable the sword collider
+    public void EnableSwordCollider()
+    {
+        if (swordCollider != null)
+        {
+            swordCollider.EnableSwordCollider();
+        }
+    }
+
+    public void DisableSwordCollider()
+    {
+        if (swordCollider != null)
+        {
+            swordCollider.DisableSwordCollider();
+        }
     }
 }
