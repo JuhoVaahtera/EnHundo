@@ -149,6 +149,7 @@ public class PlayerController : MonoBehaviour
 
     public void Die()
     {
+        
         currentState = State.Dying;
         animator.SetTrigger("Death");
     }
